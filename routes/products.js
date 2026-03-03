@@ -64,7 +64,6 @@ router.post("/create", upload.array("images", 10), async (req, res) => {
     const imageUrls = uploaded.map((img) => img.url);
     const imagePublicIds = uploaded.map((img) => img.public_id);
 
-  // ✅ সমাধান: location যোগ করো
 const product = new Product({
     name: req.body.name,
     description: req.body.description,
@@ -76,7 +75,7 @@ const product = new Product({
     countInStock: Number(req.body.countInStock),
     rating: Number(req.body.rating) || 0,
     isFeatured: req.body.isFeatured === "true",
-    location: req.body.location || "dhaka", // ✅ এটা যোগ করো
+    location: req.body.location || "dhaka", 
 });
     const savedProduct = await product.save();
 
@@ -183,43 +182,66 @@ router.delete("/:id", async (req, res) => {
 // ==========================
 // UPDATE PRODUCT (Basic)
 // ==========================
-router.put("/:id", async (req, res) => {
+router.put("/:id", upload.array("images", 10), async (req, res) => {
   try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    // নতুন ছবি upload হলে Cloudinary তে দাও
+    let imageUrls = [];
+    let imagePublicIds = [];
+
+    // পুরোনো ছবি যেগুলো রাখা হয়েছে
+    if (req.body.existingImages) {
+      const existing = Array.isArray(req.body.existingImages)
+        ? req.body.existingImages
+        : [req.body.existingImages];
+      imageUrls = [...existing];
+    }
+
+    // নতুন ছবি থাকলে upload করো
+    if (req.files && req.files.length > 0) {
+      const limit = pLimit(2);
+      const uploaded = await Promise.all(
+        req.files.map((file) =>
+          limit(async () => {
+            const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+            const result = await cloudinary.uploader.upload(base64, {
+              folder: "ecommerce_products",
+            });
+            return { url: result.secure_url, public_id: result.public_id };
+          })
+        )
+      );
+      imageUrls = [...imageUrls, ...uploaded.map((img) => img.url)];
+      imagePublicIds = uploaded.map((img) => img.public_id);
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       {
         name: req.body.name,
         description: req.body.description,
         brand: req.body.brand,
-        price: req.body.price,
+        price: Number(req.body.price),
         category: req.body.category,
-        countInStock: req.body.countInStock,
-        rating: req.body.rating,
-        isFeatured: req.body.isFeatured,
+        countInStock: Number(req.body.countInStock),
+        rating: Number(req.body.rating) || 0,
+        isFeatured: req.body.isFeatured === "true",
+        location: req.body.location || "dhaka",
+        ...(imageUrls.length > 0 && { images: imageUrls }),
+        ...(imagePublicIds.length > 0 && { imagePublicIds }),
       },
       { new: true }
     );
 
-    if (!updatedProduct) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
-    }
-
-    res.json({
-      success: true,
-      product: updatedProduct,
-    });
-
+    res.json({ success: true, product: updatedProduct });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
-
 
 module.exports = router;
 

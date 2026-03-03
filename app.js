@@ -21,9 +21,11 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Routes
 const categoryRoutes = require("./routes/category");
 const productRoutes = require("./routes/products");
+const subCategoryRoutes = require("./routes/subCategory");
 
 app.use("/api/category", categoryRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/subCategory", subCategoryRoutes);
 app.use("/uploads", express.static("uploads"));
 
 // Database connection
