@@ -1,23 +1,24 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const subCatSchema = mongoose.Schema({
-    category:{
-        type:String,
-        required:true
-    },
-    subCat:{
-        type:String,
-        required:true
-    }
-})
-
-subCatSchema.virtual('id').get(function () {
-    return this._id.toHexString();
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+    required: true,
+  },
+  subCat: {
+    type: String,
+    required: true,
+  },
 });
 
-subCatSchema.set('toJSON', {
-    virtuals: true,
+subCatSchema.virtual("id").get(function () {
+  return this._id.toHexString();
 });
 
-exports.SubCat = mongoose.model('SubCategory', subCatSchema);
+subCatSchema.set("toJSON", {
+  virtuals: true,
+});
+
+exports.SubCat = mongoose.model("SubCategory", subCatSchema);
 exports.subCatSchema = subCatSchema;

@@ -72,6 +72,7 @@ const product = new Product({
     brand: req.body.brand || "",
     price: Number(req.body.price),
     category: req.body.category,
+    // subCat:req.body.
     countInStock: Number(req.body.countInStock),
     rating: Number(req.body.rating) || 0,
     isFeatured: req.body.isFeatured === "true",
