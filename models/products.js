@@ -11,9 +11,9 @@ const productSchema = mongoose.Schema({
   },
   images: [
     {
-    type: String,
-    required: true,
-  }
+      type: String,
+      required: true,
+    }
   ],
   imagePublicIds: [
     {
@@ -55,6 +55,10 @@ const productSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  location: {          // ✅ নতুন যোগ হয়েছে
+    type: String,
+    default: "dhaka",
+  },
   dateCreated: {
     type: Date,
     default: Date.now,
@@ -63,4 +67,4 @@ const productSchema = mongoose.Schema({
 
 const Product = mongoose.model("Product", productSchema);
 
-module.exports = Product; // ✅ fixed
+module.exports = Product;
