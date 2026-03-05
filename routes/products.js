@@ -43,7 +43,20 @@ router.get("/", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+// ==========================
+// GET FEATURED PRODUCTS
+// ==========================
+router.get("/featured", async (req, res) => {
+  try {
+    const products = await Product.find({ isFeatured: true })
+      .populate("category")
+      .populate("subCat");
 
+    res.json({ success: true, products });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 // ==========================
 // CREATE PRODUCT
 // ==========================
@@ -88,7 +101,7 @@ router.post("/create", upload.array("images", 10), async (req, res) => {
       brand: req.body.brand || "",
       price: Number(req.body.price),
       category: req.body.category,
-      subCat: req.body.subCat,
+      subCat: req.body.subCat || undefined,
       countInStock: Number(req.body.countInStock),
       rating: Number(req.body.rating) || 0,
       isFeatured: req.body.isFeatured === "true",
@@ -235,7 +248,7 @@ router.put("/:id", upload.array("images", 10), async (req, res) => {
         brand: req.body.brand,
         price: Number(req.body.price),
         category: req.body.category,
-        subCat: req.body.subCat,
+        subCat: req.body.subCat || undefined,
         countInStock: Number(req.body.countInStock),
         rating: Number(req.body.rating) || 0,
         isFeatured: req.body.isFeatured === "true",
