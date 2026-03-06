@@ -22,10 +22,16 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 const categoryRoutes = require("./routes/category");
 const productRoutes = require("./routes/products");
 const subCategoryRoutes = require("./routes/subCategory");
+const productWeightRoutes = require("./routes/productWeight");
+const productSizeRoutes = require("./routes/productSize");
+const productRamsRoutes = require("./routes/productRams");
 
 app.use("/api/category", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/subCategory", subCategoryRoutes);
+app.use("/api/productWeight", productWeightRoutes);
+app.use("/api/productSize", productSizeRoutes);
+app.use("/api/productRams", productRamsRoutes);
 app.use("/uploads", express.static("uploads"));
 
 // Database connection

@@ -30,6 +30,9 @@ router.get("/", async (req, res) => {
     const products = await Product.find()
       .populate("category")
       .populate("subCat")
+      .populate("productRam")
+      .populate("productSize")
+      .populate("productWeight")
       .skip((page - 1) * perPage)
       .limit(perPage);
 
@@ -51,6 +54,26 @@ router.get("/featured", async (req, res) => {
     const products = await Product.find({ isFeatured: true })
       .populate("category")
       .populate("subCat");
+
+    res.json({ success: true, products });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// ==========================
+// GET NEW/LATEST PRODUCTS
+// ==========================
+router.get("/new", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const products = await Product.find()
+      .populate("category")
+      .populate("subCat")
+      .populate("productRam")
+      .populate("productSize")
+      .populate("productWeight")
+      .sort({ dateCreated: -1 })
+      .limit(limit);
 
     res.json({ success: true, products });
   } catch (error) {
@@ -102,6 +125,11 @@ router.post("/create", upload.array("images", 10), async (req, res) => {
       price: Number(req.body.price),
       category: req.body.category,
       subCat: req.body.subCat || undefined,
+      oldPrice: Number(req.body.oldPrice) || 0,
+      discount: Number(req.body.discount) || 0,
+      productRam: req.body.productRam || undefined,
+      productSize: req.body.productSize || undefined,
+      productWeight: req.body.productWeight || undefined,
       countInStock: Number(req.body.countInStock),
       rating: Number(req.body.rating) || 0,
       isFeatured: req.body.isFeatured === "true",
@@ -142,7 +170,12 @@ router.get("/category/:categoryId", async (req, res) => {
 // ==========================
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate("category").populate("subCat");
+    const product = await Product.findById(req.params.id)
+      .populate("category")
+      .populate("subCat")
+      .populate("productRam")
+      .populate("productSize")
+      .populate("productWeight");
 
     if (!product) {
       return res.status(404).json({
@@ -249,6 +282,11 @@ router.put("/:id", upload.array("images", 10), async (req, res) => {
         price: Number(req.body.price),
         category: req.body.category,
         subCat: req.body.subCat || undefined,
+        oldPrice: Number(req.body.oldPrice) || 0,
+        discount: Number(req.body.discount) || 0,
+        productRam: req.body.productRam || undefined,
+        productSize: req.body.productSize || undefined,
+        productWeight: req.body.productWeight || undefined,
         countInStock: Number(req.body.countInStock),
         rating: Number(req.body.rating) || 0,
         isFeatured: req.body.isFeatured === "true",
