@@ -21,5 +21,79 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
+// ==========================
+// ADD TO CART
+// ==========================
+router.post("/add", authMiddleware, async (req, res) => {
+  try {
+    const { productTitle, images, rating, price, quantity, productId } = req.body;
+
+    const cartItem = new Cart({
+      productTitle,
+      images,
+      rating,
+      price,
+      quantity,
+      subTotal: price * quantity,
+      productId,
+      userId: req.user.id,
+    });
+
+    const savedCart = await cartItem.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Item added to cart",
+      cart: savedCart,
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
+
+// ==========================
+// REMOVE FROM CART
+// ==========================
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    const cartItem = await Cart.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
+
+    if (!cartItem) {
+      return res.status(404).json({ success: false, message: "Cart item not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Item removed from cart" });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// ```
+
+// ---
+
+// **Note:**
+// - `findOneAndDelete({ _id, userId })` — শুধু নিজের cart item delete করতে পারবে
+// - অন্যের cart item এর id দিলে `404` আসবে
+
+// ---
+
+// **Postman এ test করো:**
+// ```
+// DELETE http://localhost:4000/api/cart/69afa287ff41f5310990f684
+// Authorization: Bearer <token>
+// ```
+
+// ---
+
+// **Commit message:**
+// ```
+
 module.exports = router;
 
