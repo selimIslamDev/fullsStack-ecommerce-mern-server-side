@@ -33,7 +33,7 @@ router.post("/add", authMiddleware, async (req, res) => {
       price,
       quantity,
       subTotal: price * quantity,
-      countInStock,              // ← এটা add করা হয়েছে
+      countInStock,           
       productId,
       userId: req.user.id,
     });
