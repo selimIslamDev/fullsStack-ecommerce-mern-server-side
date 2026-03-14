@@ -321,6 +321,7 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/products");
 const Category = require("../models/category");
+const { SubCat: SubCategory } = require("../models/subCat");
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 const pLimit = require("p-limit").default;
