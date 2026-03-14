@@ -33,6 +33,7 @@ const reviewRoutes = require("./routes/productReviews");
 const myListRoutes = require("./routes/myList");
 const orderRoutes = require("./routes/orders");
 const paymentRoutes = require("./routes/payment");
+const bannerRoutes = require("./routes/HomeBanner");
 
 app.use("/api/category", categoryRoutes);
 app.use("/api/products", productRoutes);
@@ -47,6 +48,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/myList", myListRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/HomeBanner", bannerRoutes);
 
 // Database connection
 mongoose

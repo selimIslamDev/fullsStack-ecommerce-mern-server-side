@@ -6,6 +6,10 @@ const homeBannerSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    imagePublicId: {     
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
@@ -16,9 +20,7 @@ homeBannerSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
-homeBannerSchema.set('toJSON', {
-  virtuals: true,
-});
+homeBannerSchema.set('toJSON', { virtuals: true });
 
 exports.HomeBanner = mongoose.model('HomeBanner', homeBannerSchema);
 exports.homeBannerSchema = homeBannerSchema;
