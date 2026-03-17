@@ -383,7 +383,7 @@
 // });
 
 // module.exports = router;
-
+const sendResetOtpEmail = require("../utils/sendResetOtpEmail");
 const { User } = require("../models/user");
 const express = require("express");
 const router = express.Router();
@@ -728,4 +728,107 @@ router.put(
     }
   },
 );
+
+// ==========================
+// FORGOT PASSWORD — OTP পাঠাও
+// ==========================
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ success: false, message: "No account found with this email" });
+    }
+
+    if (!user.isVerified) {
+      return res.status(400).json({ success: false, message: "Please verify your email first" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    user.resetOtp = otp;
+    user.resetOtpExpiry = otpExpiry;
+    await user.save();
+
+    // Reset OTP email পাঠাও
+    await sendResetOtpEmail(email, otp);
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset OTP sent to your email.",
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================
+// VERIFY RESET OTP
+// ==========================
+router.post("/verify-reset-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
+
+    if (user.resetOtp !== otp) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+
+    if (new Date() > user.resetOtpExpiry) {
+      return res.status(400).json({ success: false, message: "OTP has expired" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified. You can now reset your password.",
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================
+// RESET PASSWORD
+// ==========================
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
+
+    if (user.resetOtp !== otp) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+
+    if (new Date() > user.resetOtpExpiry) {
+      return res.status(400).json({ success: false, message: "OTP has expired" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+    user.resetOtp = null;
+    user.resetOtpExpiry = null;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully! You can now login.",
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 module.exports = router;
