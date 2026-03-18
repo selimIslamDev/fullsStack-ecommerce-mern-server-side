@@ -1,19 +1,33 @@
+const fs = require("fs");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-// dotenv শুধু local এর জন্য
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
+// Vercel-এর জন্য কন্ডিশনাল dotenv
+if (process.env.NODE_ENV !== 'production') {
+    require("dotenv").config();
 }
 
-// Middleware
-app.use(cors());
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
+// Uploads ফোল্ডার চেক
+if (!fs.existsSync("./uploads")) {
+    fs.mkdirSync("./uploads");
+}
 
-// Routes
+// CORS কনফিগারেশন (আপনার FRONTEND_URL এনভায়রনমেন্ট থেকে নিবে)
+app.use(cors({
+  origin: [
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    process.env.FRONTEND_URL // Vercel-এ আপনার ফ্রন্টেন্ডের ইউআরএল
+  ].filter(Boolean),
+  credentials: true,
+}));
+
+app.use(express.json({ limit: '50mb' })); 
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Routes Import
 const categoryRoutes = require("./routes/category");
 const productRoutes = require("./routes/products");
 const subCategoryRoutes = require("./routes/subCategory");
@@ -28,7 +42,7 @@ const orderRoutes = require("./routes/orders");
 const paymentRoutes = require("./routes/payment");
 const bannerRoutes = require("./routes/banners");
 
-// Route use
+// API Endpoints
 app.use("/api/category", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/subCategory", subCategoryRoutes);
@@ -44,115 +58,32 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/banners", bannerRoutes);
 
-// DB Connection (Updated - no old options)
-if (!global._mongoose) {
-  global._mongoose = mongoose
-    .connect(process.env.CONNECTION_STRING)
-    .then(() => console.log("✅ DB Connected"))
-    .catch((err) => console.log("❌ DB Error:", err));
-}
-
-// Test route (optional)
+// Root Route (Vercel checks this)
 app.get("/", (req, res) => {
-  res.send("🚀 API is running...");
+  res.send("E-commerce Server is Running...");
 });
 
-// Local run এর জন্য (Vercel এ ignore হবে)
-if (process.env.NODE_ENV !== "production") {
+// Database connection & Server Start
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.CONNECTION_STRING);
+    console.log("Database connection is ready...");
+  } catch (err) {
+    console.log("Database connection error:", err);
+  }
+};
+
+connectDB();
+
+// Vercel handles the port, but local needs it
+if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => {
-    console.log(`🔥 Server running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
   });
 }
 
-// MUST EXPORT (Vercel এর জন্য)
 module.exports = app;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const express = require("express");
-// const app = express();
-// const mongoose = require("mongoose");
-// const cors = require("cors");
-
-// // dotenv শুধু local এর জন্য
-// if (process.env.NODE_ENV !== "production") {
-//   require("dotenv").config();
-// }
-
-// // Middleware
-// app.use(cors());
-// app.use(express.json({ limit: "50mb" }));
-// app.use(express.urlencoded({ limit: "50mb", extended: true }));
-
-// // Routes
-// const categoryRoutes = require("./routes/category");
-// const productRoutes = require("./routes/products");
-// const subCategoryRoutes = require("./routes/subCategory");
-// const productWeightRoutes = require("./routes/productWeight");
-// const productSizeRoutes = require("./routes/productSize");
-// const productRamsRoutes = require("./routes/productRams");
-// const userRoutes = require("./routes/user");
-// const cartRoutes = require("./routes/cart");
-// const reviewRoutes = require("./routes/productReviews");
-// const myListRoutes = require("./routes/myList");
-// const orderRoutes = require("./routes/orders");
-// const paymentRoutes = require("./routes/payment");
-// const bannerRoutes = require("./routes/banners");
-
-// // Route use
-// app.use("/api/category", categoryRoutes);
-// app.use("/api/products", productRoutes);
-// app.use("/api/subCategory", subCategoryRoutes);
-// app.use("/api/productWeight", productWeightRoutes);
-// app.use("/api/productSize", productSizeRoutes);
-// app.use("/api/productRams", productRamsRoutes);
-// app.use("/uploads", express.static("uploads"));
-// app.use("/api/user", userRoutes);
-// app.use("/api/cart", cartRoutes);
-// app.use("/api/reviews", reviewRoutes);
-// app.use("/api/myList", myListRoutes);
-// app.use("/api/orders", orderRoutes);
-// app.use("/api/payment", paymentRoutes);
-// app.use("/api/banners", bannerRoutes);
-
-// // DB Connection (Vercel safe)
-// if (!global._mongoose) {
-//   global._mongoose = mongoose
-//     .connect(process.env.CONNECTION_STRING, {
-//       useNewUrlParser: true,
-//       useUnifiedTopology: true,
-//     })
-//     .then(() => console.log("✅ DB Connected"))
-//     .catch((err) => console.log("❌ DB Error:", err));
-// }
-
-// // Test route (optional but useful)
-// app.get("/", (req, res) => {
-//   res.send("API is running...");
-// });
-
-// // ❌ IMPORTANT: app.listen() ব্যবহার করা যাবে না Vercel এ
-
-// // ✅ MUST EXPORT
-// module.exports = app;
-
-
-
-
-
 
 
 
@@ -170,20 +101,18 @@ module.exports = app;
 // const app = express();
 // const mongoose = require("mongoose");
 // const cors = require("cors");
+// require("dotenv").config();
 
 
-
-// // if (!fs.existsSync("./uploads")) {
-// //     fs.mkdirSync("./uploads");
-// // }
-// if (process.env.NODE_ENV !== 'production') {
-//     require("dotenv").config();
+// if (!fs.existsSync("./uploads")) {
+//     fs.mkdirSync("./uploads");
 // }
-// app.use(cors());
-// // app.use(cors({
-// //   origin: ["http://localhost:5173", "http://localhost:5174"],
-// //   credentials: true,
-// // }));
+
+// // app.use(cors());
+// app.use(cors({
+//   origin: ["http://localhost:5173", "http://localhost:5174"],
+//   credentials: true,
+// }));
 
 // app.use(express.json({ limit: '50mb' })); 
 // app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -221,53 +150,23 @@ module.exports = app;
 // app.use("/api/banners", bannerRoutes);
 
 // // Database connection
-// // mongoose
-// //   .connect(process.env.CONNECTION_STRING)
-// //   .then(() => {
-// //     console.log("Database connection is ready...");
-
-// //     app.listen(process.env.PORT || 5000, () => {
-// //       console.log(`Server is running on port ${process.env.PORT || 5000}`);
-// //     });
-// //   })
-// //   .catch((err) => {
-// //     console.log("Database connection error:", err);
-// //   });
-
-// // Database connection (listen কে বাইরে নিয়ে আসুন)
-// // mongoose
-// //   .connect(process.env.CONNECTION_STRING)
-// //   .then(() => {
-// //     console.log("Database connection is ready...");
-// //   })
-// //   .catch((err) => {
-// //     console.log("Database connection error:", err);
-// //   });
-
-// // // app.listen কে mongoose এর বাইরে নিয়ে আসুন
-// // const PORT = process.env.PORT || 5000;
-// // app.listen(PORT, () => {
-// //   console.log(`Server is running on port ${PORT}`);
-// // });
-
-// // // এই লাইনটি অবশ্যই যোগ করবেন (খুবই জরুরি)
-// // module.exports = app;
-
-
-// // Database connection
 // mongoose
 //   .connect(process.env.CONNECTION_STRING)
-//   .then(() => console.log("Database connection is ready..."))
-//   .catch((err) => console.log("Database connection error:", err));
+//   .then(() => {
+//     console.log("Database connection is ready...");
 
-// // listen কে mongoose এর বাইরে রাখুন
-// const PORT = process.env.PORT || 4000;
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });
+//     app.listen(process.env.PORT || 5000, () => {
+//       console.log(`Server is running on port ${process.env.PORT || 5000}`);
+//     });
+//   })
+//   .catch((err) => {
+//     console.log("Database connection error:", err);
+//   });
 
-// // এই লাইনটি মাস্ট
+
 // module.exports = app;
+
+
 
 
 
