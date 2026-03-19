@@ -13,7 +13,8 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "http://localhost:5174",
-    "https://fullstack-ecommerce-project.netlify.app", // 👈 Netlify frontend
+    "https://fullstack-ecommerce-project.netlify.app",  // 👈 Frontend
+    "https://fullstack-admin-dashboard.netlify.app",    // 👈 Admin Dashboard
     process.env.FRONTEND_URL,
   ].filter(Boolean),
   credentials: true,
