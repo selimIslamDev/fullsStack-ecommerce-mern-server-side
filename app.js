@@ -17,7 +17,7 @@ app.use(
       "http://localhost:5175",
       "https://fullstack-ecommerce-project.netlify.app", 
       "https://fullstack-admin-dashboard.netlify.app", 
-      "https://fullstack-ecommerce-super-admin.netlify.app/",
+     "https://fullstack-ecommerce-super-admin.netlify.app",
       process.env.FRONTEND_URL,
     ].filter(Boolean),
     credentials: true,
