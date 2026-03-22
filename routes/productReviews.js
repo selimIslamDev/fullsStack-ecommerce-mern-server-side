@@ -86,4 +86,17 @@ router.post("/add", async (req, res) => {
   }
 });
 
+// ==========================
+// GET REVIEW COUNT
+// ==========================
+router.get("/get/count", authMiddleware, async (req, res) => {
+  try {
+    const Review = require("../models/productReviews");
+    const reviewCount = await Review.countDocuments();
+    res.status(200).json({ success: true, reviewCount });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

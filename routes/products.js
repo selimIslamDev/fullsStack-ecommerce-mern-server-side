@@ -340,6 +340,17 @@ router.get("/:id/remaining-stock", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+// ==========================
+// GET PRODUCT COUNT
+// ==========================
+router.get("/get/count", async (req, res) => {
+  try {
+    const productCount = await Product.countDocuments();
+    res.status(200).json({ success: true, productCount });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
 module.exports = router;
 

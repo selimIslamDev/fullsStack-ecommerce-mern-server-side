@@ -173,4 +173,16 @@ router.put("/:id/cancel", authMiddleware, async (req, res) => {
   }
 });
 
+// ==========================
+// GET ORDER COUNT
+// ==========================
+router.get("/get/count", authMiddleware, async (req, res) => {
+  try {
+    const orderCount = await Order.countDocuments();
+    res.status(200).json({ success: true, orderCount });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;
