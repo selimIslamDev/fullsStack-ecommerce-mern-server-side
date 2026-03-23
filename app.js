@@ -15,9 +15,9 @@ app.use(
       "http://localhost:5173",
       "http://localhost:5174",
       "http://localhost:5175",
-      "https://fullstack-ecommerce-project.netlify.app", 
-      "https://fullstack-admin-dashboard.netlify.app", 
-     "https://fullstack-ecommerce-super-admin.netlify.app",
+      "https://fullstack-ecommerce-project.netlify.app",
+      "https://fullstack-admin-dashboard.netlify.app",
+      "https://fullstack-ecommerce-super-admin.netlify.app",
       process.env.FRONTEND_URL,
     ].filter(Boolean),
     credentials: true,
@@ -42,6 +42,7 @@ const orderRoutes = require("./routes/orders");
 const paymentRoutes = require("./routes/payment");
 const bannerRoutes = require("./routes/banners");
 const superAdminRoutes = require("./routes/superAdmin");
+
 // API Endpoints
 app.use("/api/category", categoryRoutes);
 app.use("/api/products", productRoutes);
@@ -63,11 +64,24 @@ app.get("/", (req, res) => {
   res.send("Server is running successfully!");
 });
 
-// Database connection
-mongoose
-  .connect(process.env.CONNECTION_STRING)
-  .then(() => console.log("Connected to MongoDB..."))
-  .catch((err) => console.error("Could not connect to MongoDB...", err));
+// ✅ Vercel serverless এর জন্য optimize করা MongoDB connection
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) return;
+  try {
+    await mongoose.connect(process.env.CONNECTION_STRING, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    isConnected = true;
+    console.log("Connected to MongoDB...");
+  } catch (err) {
+    console.error("Could not connect to MongoDB...", err);
+  }
+};
+
+connectDB();
 
 // Vercel handles server, only listen locally
 if (process.env.NODE_ENV !== "production") {
