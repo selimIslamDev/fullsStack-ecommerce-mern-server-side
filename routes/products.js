@@ -193,6 +193,18 @@ router.get("/category/:categoryId", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+// ==========================
+// GET PRODUCT COUNT
+// ==========================
+router.get("/get/count", async (req, res) => {
+  try {
+    const productCount = await Product.countDocuments();
+    res.status(200).json({ success: true, productCount });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 
 // ==========================
 // GET PRODUCT BY ID
@@ -337,17 +349,6 @@ router.get("/:id/remaining-stock", async (req, res) => {
       alreadyOrdered,
       remaining,
     });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-// ==========================
-// GET PRODUCT COUNT
-// ==========================
-router.get("/get/count", async (req, res) => {
-  try {
-    const productCount = await Product.countDocuments();
-    res.status(200).json({ success: true, productCount });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
