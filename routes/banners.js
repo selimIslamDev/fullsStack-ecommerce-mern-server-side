@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { HomeBanner } = require("../models/homeBanner");
+const { HomeBanner } = require("../models/HomeBanner");
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 
